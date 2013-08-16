@@ -1,0 +1,32 @@
+$country-width: 400px
+$country-height: 400px
+$country-margin: 20px
+$selector-width: 300px
+
+body
+  background: #aef88e
+
+.wrapper
+  width: $country-width*2 + $country-margin*4 + 4
+  margin: auto
+  padding: 0px
+
+  #countries
+    padding: 0px
+    margin: 0px
+
+  .country 
+    display: inline-block
+    width: $country-width
+    height: $country-height
+    background: lightgreen
+    margin: 20px
+    padding: 0px
+
+  .country-selector
+    display: inline-block
+    select
+      width: $selector-width
+
+    margin-left: ($country-width - $selector-width)/2 + $country-margin
+    margin-right: ($country-width - $selector-width)/2 + $country-margin

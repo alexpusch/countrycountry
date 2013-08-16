@@ -3,4 +3,4 @@
 # You can use CoffeeScript in this file: http://coffeescript.org/
 
 $ ->
-  $('.country-selector').chosen()
+  $('.country-selector select').chosen()
