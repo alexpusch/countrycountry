@@ -3,6 +3,6 @@
 # You can use CoffeeScript in this file: http://coffeescript.org/
 
 $ ->
-  countries = ["Israel", "France", "England", "United States"]
+  countries = gon.countries
   $('.country-selector input').autocomplete
     source: countries

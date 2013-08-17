@@ -32,6 +32,12 @@ gem 'd3_rails'
 gem 'haml-rails'
 gem 'compass-rails', github: 'milgner/compass-rails', branch: 'rails4'
 
+gem 'gon'
+
+group :development do
+  gem 'better_errors'
+  gem 'binding_of_caller'
+end
 
 group :doc do
   # bundle exec rake doc:rails generates the API under doc/api.
