@@ -27,12 +27,12 @@ gem 'turbolinks'
 gem 'jbuilder', '~> 1.2'
 
 gem 'chosen-rails'
-gem 'd3_rails'
 
 gem 'haml-rails'
 gem 'compass-rails', github: 'milgner/compass-rails', branch: 'rails4'
 
 gem 'gon'
+gem 'underscore-rails'
 
 group :development do
   gem 'better_errors'
