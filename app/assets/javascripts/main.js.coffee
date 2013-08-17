@@ -3,4 +3,6 @@
 # You can use CoffeeScript in this file: http://coffeescript.org/
 
 $ ->
-  $('.country-selector select').chosen()
+  countries = ["Israel", "France", "England", "United States"]
+  $('.country-selector input').autocomplete
+    source: countries

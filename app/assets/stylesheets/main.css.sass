@@ -25,8 +25,23 @@ body
 
   .country-selector
     display: inline-block
-    select
+    input
       width: $selector-width
+      height: 50px
+      border: 0
+      padding-left: 10px
+      font-size: 20pt
+      box-sizing: border-box
+      -moz-box-sizing: border-box
 
     margin-left: ($country-width - $selector-width)/2 + $country-margin
     margin-right: ($country-width - $selector-width)/2 + $country-margin
+
+.ui-autocomplete
+  width: $selector-width
+  list-style: none
+  padding: 10px
+  font-size: 20pt
+  box-sizing: border-box
+  -moz-box-sizing: border-box
+  background: lightgreen
