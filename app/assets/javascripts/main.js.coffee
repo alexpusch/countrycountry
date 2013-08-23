@@ -8,6 +8,11 @@ $ ->
     source: countries
 
   unifier = new CoordinatesUnifier
+  countriesView = new CountriesView "#countries canvas",
+    width: 400
+    height: $("#countries canvas").height()
+    margin: 20
+
 
   $.get('assets/Brazil.geo.json').done (data)->
     coords = data.features[0].geometry.coordinates[0]
@@ -17,8 +22,7 @@ $ ->
     countryCoords = unifier.unify coords
     console.log countryCoords
 
-    countryView = new CountryView "#country1"
-    countryView.showCountry countryCoords
+    countriesView.showCountry countryCoords, "left"
 
   $.get('assets/South Africa.geo.json').done (data)->
     coords = data.features[0].geometry.coordinates[0]
@@ -28,9 +32,7 @@ $ ->
     countryCoords = unifier.unify coords
     console.log countryCoords
 
-    countryView = new CountryView "#country2"
-    countryView.showCountry countryCoords
-
+    countriesView.showCountry countryCoords, "right"
 
 class CoordinatesUnifier
   unify: (coordinates)->
@@ -52,7 +54,7 @@ class CoordinatesUnifier
       
   projectToMercator: (coordinates)->
     _.map coordinates, (coord)=>
-      scale = 200
+      scale = 100
       [coord[0] * scale, @y2lat(coord[1]) * scale]
 
   y2lat: (a) -> 
@@ -79,14 +81,16 @@ class CoordinatesUnifier
       curMax
     ,firstAbs
 
-class CountryView
-  constructor: (canvasId)->
+class CountriesView
+  constructor: (canvasId, options = {})->
     @canvas = $(canvasId)[0]
-    paper.setup @canvas
-    @canvasWidth = 400
-    @canvasHeight = 400
+    @countryWidth = options.width
+    @height = options.height
+    @margin = options.margin
 
-  showCountry: (countryCoords)->
+    paper.setup @canvas
+
+  showCountry: (countryCoords, side)->
     path = new paper.Path()
     path.strokeColor = 'black';
 
@@ -99,8 +103,15 @@ class CountryView
       path.lineTo correctedCoord
       path.moveTo coord
 
+    if side == "left"
+      delta = new paper.Point(@margin, 0)
+    else if side == "right"
+      delta = new paper.Point(@margin * 3 + @countryWidth, 0)
+
+    path.translate delta
+
     paper.view.draw()
 
   projectToCanvas: (coord)->
-    [coord[0] + @canvasWidth/2, @canvasHeight - coord[1] - @canvasHeight/2]
+    [coord[0] + @countryWidth/2, @height - coord[1] - @height/2]
 
