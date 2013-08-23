@@ -7,13 +7,14 @@ $ ->
   $('.country-selector input').autocomplete
     source: countries
 
+  unifier = new CoordinatesUnifier
+
   $.get('assets/Brazil.geo.json').done (data)->
     coords = data.features[0].geometry.coordinates[0]
     if coords.length == 1
       coords = coords[0]
 
-    countryPath = new CountryPath coords
-    countryCoords = countryPath.getCoordinates()
+    countryCoords = unifier.unify coords
     console.log countryCoords
 
     countryView = new CountryView "#country1"
@@ -24,25 +25,19 @@ $ ->
     if coords.length == 1
       coords = coords[0]
 
-    countryPath = new CountryPath coords
-    countryCoords = countryPath.getCoordinates()
+    countryCoords = unifier.unify coords
     console.log countryCoords
 
     countryView = new CountryView "#country2"
     countryView.showCountry countryCoords
 
 
-class CountryPath
-  constructor: (coordinates)->
-    window.orig = coordinates
-    coordinates = @rotateToOrigin coordinates
-    window.rotated = coordinates
-    coordinates = @scaleToUnit coordinates
-    mercatorCoords = @projectToMercator coordinates
-    window.mercator = mercatorCoords
-    @coordinates = mercatorCoords
-
-  getCoordinates: ->
+class CoordinatesUnifier
+  unify: (coordinates)->
+    rotated = @rotateToOrigin coordinates
+    scaled = @scaleToUnit rotated
+    mercator = @projectToMercator scaled
+    @coordinates = mercator
     @coordinates
 
   rotateToOrigin: (coordinates)->
