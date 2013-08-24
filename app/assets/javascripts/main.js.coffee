@@ -72,20 +72,46 @@ class CoordinatesUnifier
 class CountriesView
   constructor: (canvasId, options = {})->
     @canvas = $(canvasId)[0]
+    paper.setup @canvas
+
+    $(@canvas).on 'mouseover', =>
+      @animateIn = true
+
+    $(@canvas).on 'mouseout', =>
+      @animateOut = true
+
+    paper.view.onFrame = (event) => @animate()
+      
     @countryWidth = options.width
     @height = options.height
     @margin = options.margin
+    @speed = 15
 
     @coords = 
       left: null
       right: null
 
-    paper.setup @canvas
-    
     @paths = 
       left: new paper.Path()
       right: new paper.Path()
 
+  animate: ->
+    if @animateIn || @animateOut
+      if @animateIn
+        target = @margin * 2 + @countryWidth
+        speed = @speed
+      if @animateOut
+        target = (@margin + @countryWidth/2)
+        speed = -@speed
+
+      @paths.left.translate(new paper.Point(speed,0))
+      @paths.right.translate(new paper.Point(-speed,0))
+
+      if Math.abs(@paths.left.bounds.center.x - target) < @speed + 1
+        @animateIn = false
+        @animateOut = false
+
+      paper.view.draw()
 
   showCountry: (countryCoords, side)->
     @coords[side] = countryCoords
