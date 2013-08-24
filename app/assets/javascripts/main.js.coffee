@@ -4,9 +4,6 @@
 
 $ ->
   countries = gon.countries
-  $('.country-selector input').autocomplete
-    source: countries
-
   unifier = new CoordinatesUnifier
   countriesView = new CountriesView "#countries canvas",
     width: 400
@@ -14,25 +11,21 @@ $ ->
     margin: 20
 
 
-  $.get('assets/Israel.geo.json').done (data)->
-    coords = data.features[0].geometry.coordinates[0]
-    if coords.length == 1
-      coords = coords[0]
+  $('.country-selector input').autocomplete
+    source: countries
+    select: (event, ui) ->
+      side = $(event.target).data('side')
+      country = ui.item.value
 
-    countryCoords = unifier.unify coords
-    console.log countryCoords
+      $.get("assets/#{country}.geo.json").done (data)->
+        coords = data.features[0].geometry.coordinates[0]
+        if coords.length == 1
+          coords = coords[0]
 
-    countriesView.showCountry countryCoords, "left"
+        countryCoords = unifier.unify coords
+        # console.log countryCoords
 
-  $.get('assets/Germany.geo.json').done (data)->
-    coords = data.features[0].geometry.coordinates[0]
-    if coords.length == 1
-      coords = coords[0]
-
-    countryCoords = unifier.unify coords
-    console.log countryCoords
-
-    countriesView.showCountry countryCoords, "right"
+        countriesView.showCountry countryCoords, side
 
 class CoordinatesUnifier
   unify: (coordinates)->
@@ -83,21 +76,36 @@ class CountriesView
     @height = options.height
     @margin = options.margin
 
-    @paths = 
+    @coords = 
       left: null
       right: null
 
     paper.setup @canvas
+    
+    @paths = 
+      left: new paper.Path()
+      right: new paper.Path()
+
 
   showCountry: (countryCoords, side)->
-    path = @createPath countryCoords
-    @paths[side] = path
-    window.paths = @paths
+    @coords[side] = countryCoords
 
     @render()
 
-  createPath: (countryCoords)->
-    path = new paper.Path()
+  render: ->
+    unless @coords.left? && @coords.right?
+      return
+
+    leftPath = @createPath @coords.left, @paths.left
+    rightPath = @createPath @coords.right, @paths.right
+
+    @scaleToFit leftPath, rightPath
+    @moveToPlace leftPath, rightPath
+
+    paper.view.draw()
+
+  createPath: (countryCoords, path)->
+    path.removeSegments()
     path.strokeColor = 'black';
 
     correctedCoord = @projectToCanvas countryCoords[0]
@@ -111,28 +119,19 @@ class CountriesView
 
     path
 
-  render: ->
-    unless @paths.left? && @paths.right?
-      return
-
-    @scaleToFit()
-    @moveToPlace()
-
-    paper.view.draw()
-
-  moveToPlace: ->
+  moveToPlace: (left, right)->
     targetLeftCenter = new paper.Point(@margin + @countryWidth/2, @height/2)
     targetRightCenter = new paper.Point(3 * @margin + @countryWidth * 1.5, @height/2)
 
-    leftDelta = targetLeftCenter.subtract @paths.left.bounds.center
-    rightDelta = targetRightCenter.subtract @paths.right.bounds.center
+    leftDelta = targetLeftCenter.subtract left.bounds.center
+    rightDelta = targetRightCenter.subtract right.bounds.center
 
-    @paths.left.translate leftDelta
-    @paths.right.translate rightDelta
+    left.translate leftDelta
+    right.translate rightDelta
 
-  scaleToFit: ->
-    leftBound = @paths.left.bounds
-    rightBound = @paths.right.bounds
+  scaleToFit: (left, right)->
+    leftBound = left.bounds
+    rightBound = right.bounds
 
     maxSide = _.max [leftBound.width, leftBound.height, rightBound.width, rightBound.height]
     ratio = @height/maxSide 
@@ -140,8 +139,8 @@ class CountriesView
     leftCenter = new paper.Point leftBound.center
     rightCenter = new paper.Point rightBound.center
 
-    @paths.left.scale ratio, leftCenter
-    @paths.right.scale ratio, rightCenter
+    left.scale ratio, leftCenter
+    right.scale ratio, rightCenter
 
   projectToCanvas: (coord)->
     [coord[0], @height - coord[1]]
