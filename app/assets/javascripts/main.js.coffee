@@ -14,7 +14,7 @@ $ ->
     margin: 20
 
 
-  $.get('assets/Brazil.geo.json').done (data)->
+  $.get('assets/Israel.geo.json').done (data)->
     coords = data.features[0].geometry.coordinates[0]
     if coords.length == 1
       coords = coords[0]
@@ -24,7 +24,7 @@ $ ->
 
     countriesView.showCountry countryCoords, "left"
 
-  $.get('assets/South Africa.geo.json').done (data)->
+  $.get('assets/Germany.geo.json').done (data)->
     coords = data.features[0].geometry.coordinates[0]
     if coords.length == 1
       coords = coords[0]
@@ -37,10 +37,8 @@ $ ->
 class CoordinatesUnifier
   unify: (coordinates)->
     rotated = @rotateToOrigin coordinates
-    scaled = @scaleToUnit rotated
-    mercator = @projectToMercator scaled
-    @coordinates = mercator
-    @coordinates
+    mercator = @projectToMercator rotated
+    mercator
 
   rotateToOrigin: (coordinates)->
     sum = _.reduce coordinates, (val, cur)->
@@ -60,10 +58,7 @@ class CoordinatesUnifier
   y2lat: (a) -> 
     180/Math.PI * (2 * Math.atan(Math.exp(a*Math.PI/180)) - Math.PI/2)
 
-  scaleToUnit: (coordinates)->
-    window.max = @findAbsMax coordinates
-    unitScale = Math.max max[0], max[1]
-
+  scale: (coordinates, scale)->
     _.map coordinates, (coord)->
       [coord[0]/unitScale, coord[1]/unitScale]
 
@@ -88,9 +83,20 @@ class CountriesView
     @height = options.height
     @margin = options.margin
 
+    @paths = 
+      left: null
+      right: null
+
     paper.setup @canvas
 
   showCountry: (countryCoords, side)->
+    path = @createPath countryCoords
+    @paths[side] = path
+    window.paths = @paths
+
+    @render()
+
+  createPath: (countryCoords)->
     path = new paper.Path()
     path.strokeColor = 'black';
 
@@ -103,15 +109,40 @@ class CountriesView
       path.lineTo correctedCoord
       path.moveTo coord
 
-    if side == "left"
-      delta = new paper.Point(@margin, 0)
-    else if side == "right"
-      delta = new paper.Point(@margin * 3 + @countryWidth, 0)
+    path
 
-    path.translate delta
+  render: ->
+    unless @paths.left? && @paths.right?
+      return
+
+    @scaleToFit()
+    @moveToPlace()
 
     paper.view.draw()
 
+  moveToPlace: ->
+    targetLeftCenter = new paper.Point(@margin + @countryWidth/2, @height/2)
+    targetRightCenter = new paper.Point(3 * @margin + @countryWidth * 1.5, @height/2)
+
+    leftDelta = targetLeftCenter.subtract @paths.left.bounds.center
+    rightDelta = targetRightCenter.subtract @paths.right.bounds.center
+
+    @paths.left.translate leftDelta
+    @paths.right.translate rightDelta
+
+  scaleToFit: ->
+    leftBound = @paths.left.bounds
+    rightBound = @paths.right.bounds
+
+    maxSide = _.max [leftBound.width, leftBound.height, rightBound.width, rightBound.height]
+    ratio = @height/maxSide 
+
+    leftCenter = new paper.Point leftBound.center
+    rightCenter = new paper.Point rightBound.center
+
+    @paths.left.scale ratio, leftCenter
+    @paths.right.scale ratio, rightCenter
+
   projectToCanvas: (coord)->
-    [coord[0] + @countryWidth/2, @height - coord[1] - @height/2]
+    [coord[0], @height - coord[1]]
 
