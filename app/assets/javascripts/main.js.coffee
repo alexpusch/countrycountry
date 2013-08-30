@@ -11,42 +11,89 @@ $ ->
     margin: 20
 
 
+  loadCountry = (country, side) ->
+    $.get("assets/#{country}.geo.json").done (data)->
+      window.data = data
+
+      geoJson = unifier.unify data
+      countriesView.showCountry geoJson, side
+
+  loadCountry "Israel", "left"
+  loadCountry "Israel", "right"
+  # loadCountry "Germany", "right"
+  $('.country-selector input[data-side=left]').val("Israel")
+  $('.country-selector input[data-side=right]').val("Germany")
+
+
   $('.country-selector input').autocomplete
     source: countries
     select: (event, ui) ->
       side = $(event.target).data('side')
       country = ui.item.value
-
-      $.get("assets/#{country}.geo.json").done (data)->
-        coords = data.features[0].geometry.coordinates[0]
-        if coords.length == 1
-          coords = coords[0]
-
-        countryCoords = unifier.unify coords
-        # console.log countryCoords
-
-        countriesView.showCountry countryCoords, side
+      loadCountry country, side
 
 class CoordinatesUnifier
-  unify: (coordinates)->
-    rotated = @rotateToOrigin coordinates
-    mercator = @projectToMercator rotated
-    mercator
+  unify: (geoJson)->  
+    @translateToOrigin geoJson
+    window.geoJson = geoJson
+    @projectToMercator geoJson
+    geoJson
 
-  rotateToOrigin: (coordinates)->
+  translateToOrigin: (geoJson)->
+    delta = @findDeltaToOrigin geoJson
+    @translateCoords geoJson.geometry.coordinates, delta
+
+  findDeltaToOrigin: (geoJson)->
+    coordinates = geoJson.geometry.coordinates
+    coordinates = @flatten coordinates, []
+
     sum = _.reduce coordinates, (val, cur)->
       [val[0] + cur[0], val[1] + cur[1]]
     ,[0,0]
 
-    average = [sum[0]/coordinates.length, sum[1]/coordinates.length]
+    delta = [-sum[0]/coordinates.length, -sum[1]/coordinates.length]
 
-    _.map coordinates, (coord)->
-      [coord[0] - average[0], coord[1] - average[1]]
-      
-  projectToMercator: (coordinates)->
-    _.map coordinates, (coord)=>
-      scale = 100
-      [coord[0] * scale, @y2lat(coord[1]) * scale]
+  translateCoords: (coordinates, delta)->
+    @visitCoordinate coordinates, (coord)=>
+      x: coord.x + delta[0]
+      y: coord.y + delta[1]
+
+
+  projectCoords: (coordinates)->
+    @visitCoordinate coordinates, (coord)=>
+      @projectToMercator coord
+
+  visitCoordinate: (coordinates, action) ->
+    _.each coordinates, (value)=>
+      if(_.isArray(value) && !@isCoordinate(value))
+        @visitCoordinate value, action
+      else
+        valueObj =
+          {
+            x: value[0]
+            y: value[1]
+          }
+
+        returnObj = action valueObj
+
+        value[0] = returnObj.x
+        value[1] = returnObj.y
+
+  flatten: (input, output)->
+    _.each input, (value)=>
+      if (_.isArray(value) && !@isCoordinate(value))
+        @flatten(value, output)
+      else
+        output.push(value)
+
+    output
+
+  isCoordinate: (value)->
+    _.isArray(value) && value.length == 2 && _.isNumber(value[0]) && _.isNumber(value[1])
+
+  projectToMercator: (coord)->
+    x: coord.x
+    y: @y2lat(coord.y)
 
   y2lat: (a) -> 
     180/Math.PI * (2 * Math.atan(Math.exp(a*Math.PI/180)) - Math.PI/2)
@@ -55,19 +102,7 @@ class CoordinatesUnifier
     _.map coordinates, (coord)->
       [coord[0]/unitScale, coord[1]/unitScale]
 
-  findAbsMax: (coordinates)->
-    firstAbs = [Math.abs(coordinates[0][0]), Math.abs(coordinates[1][0])]
-    _.reduce coordinates, (max, cur)->
-      curMax = _.clone max
-      
-      if max[0] < Math.abs cur[0]
-        curMax[0] = Math.abs cur[0]
-      
-      if max[1] < Math.abs cur[1]
-        curMax[1] = Math.abs cur[1]
 
-      curMax
-    ,firstAbs
 
 class CountriesView
   constructor: (canvasId, options = {})->
@@ -95,25 +130,8 @@ class CountriesView
       left: new paper.Path()
       right: new paper.Path()
 
-  animate: ->
-    if @animateIn || @animateOut
-      if @animateIn
-        target = @margin * 2 + @countryWidth
-        speed = @speed
-      if @animateOut
-        target = (@margin + @countryWidth/2)
-        speed = -@speed
-
-      @paths.left.translate(new paper.Point(speed,0))
-      @paths.right.translate(new paper.Point(-speed,0))
-
-      if Math.abs(@paths.left.bounds.center.x - target) < @speed + 1
-        @animateIn = false
-        @animateOut = false
-
-      paper.view.draw()
-
-  showCountry: (countryCoords, side)->
+  showCountry: (geoJson, side)->
+    countryCoords = geoJson.geometry.coordinates[0]
     @coords[side] = countryCoords
 
     @render()
@@ -168,6 +186,24 @@ class CountriesView
     left.scale ratio, leftCenter
     right.scale ratio, rightCenter
 
+
+  animate: ->
+    if @animateIn || @animateOut
+      if @animateIn
+        target = @margin * 2 + @countryWidth
+        speed = @speed
+      if @animateOut
+        target = (@margin + @countryWidth/2)
+        speed = -@speed
+
+      @paths.left.translate(new paper.Point(speed,0))
+      @paths.right.translate(new paper.Point(-speed,0))
+
+      if Math.abs(@paths.left.bounds.center.x - target) < @speed + 1
+        @animateIn = false
+        @animateOut = false
+
+      paper.view.draw()
   projectToCanvas: (coord)->
     [coord[0], @height - coord[1]]
 
