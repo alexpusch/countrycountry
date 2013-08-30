@@ -165,6 +165,20 @@ class CountriesView
 
     path
 
+  createMultiPath: (coordinates, path)->
+    components = []
+    _.each coordinates, (simplePolygon)=>
+      # A simple polygon wight have holes in it, so we need
+      # to iterate over its components
+      _.each simplePolygon, (subPolygon)=>
+        component = new paper.Path
+        component = @createPath [subPolygon], component
+        components.push component
+
+    path.addChildren components
+
+    path
+
   createPath: (coordinates, path)->  
     coordinates = coordinates[0]
 
@@ -176,17 +190,6 @@ class CountriesView
       correctedCoord = @projectToCanvas coord
       path.lineTo correctedCoord
       path.moveTo coord
-
-    path
-
-  createMultiPath: (coordinates, path)->
-    components = []
-    _.each coordinates, (simplePolygon)=>
-      component = new paper.Path
-      component = @createPath simplePolygon, component
-      components.push component
-
-    path.addChildren components
 
     path
 
