@@ -115,6 +115,12 @@ class CountriesView
     $(@canvas).on 'mouseout', =>
       @animateOut = true
 
+    @pathStyle = 
+      strokeColor : 'black';
+      fillColor : 'green'
+      strokeWidth : 2
+      opacity : 0.5
+
     paper.view.onFrame = (event) => @animate()
       
     @countryWidth = options.width
@@ -129,6 +135,9 @@ class CountriesView
     @paths = 
       left: new paper.CompoundPath()
       right: new paper.CompoundPath()
+
+    _.extend @paths.left, @pathStyle
+    _.extend @paths.right, @pathStyle
 
     window.paths = @paths
 
@@ -151,8 +160,6 @@ class CountriesView
 
   createPathFromGeoJson: (countryGeoJson, path)->
     path.removeChildren()
-    path.strokeColor = 'black';
-    path.fillColor = 'red'
 
     switch countryGeoJson.geometry.type 
       when "Polygon" then @createSimplePath countryGeoJson.geometry.coordinates, path
