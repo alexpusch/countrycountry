@@ -19,7 +19,7 @@ $ ->
       countriesView.showCountry geoJson, side
 
   loadCountry "Israel", "left"
-  loadCountry "Israel", "right"
+  loadCountry "Germany", "right"
   # loadCountry "Germany", "right"
   $('.country-selector input[data-side=left]').val("Israel")
   $('.country-selector input[data-side=right]').val("Germany")
@@ -127,12 +127,13 @@ class CountriesView
       right: null
 
     @paths = 
-      left: new paper.Path()
-      right: new paper.Path()
+      left: new paper.CompoundPath()
+      right: new paper.CompoundPath()
+
+    window.paths = @paths
 
   showCountry: (geoJson, side)->
-    countryCoords = geoJson.geometry.coordinates[0]
-    @coords[side] = countryCoords
+    @coords[side] = geoJson
 
     @render()
 
@@ -140,26 +141,52 @@ class CountriesView
     unless @coords.left? && @coords.right?
       return
 
-    leftPath = @createPath @coords.left, @paths.left
-    rightPath = @createPath @coords.right, @paths.right
+    leftPath = @createPathFromGeoJson @coords.left, @paths.left
+    rightPath = @createPathFromGeoJson @coords.right, @paths.right
 
     @scaleToFit leftPath, rightPath
     @moveToPlace leftPath, rightPath
 
     paper.view.draw()
 
-  createPath: (countryCoords, path)->
-    path.removeSegments()
+  createPathFromGeoJson: (countryGeoJson, path)->
+    path.removeChildren()
     path.strokeColor = 'black';
+    path.fillColor = 'red'
 
-    correctedCoord = @projectToCanvas countryCoords[0]
+    switch countryGeoJson.geometry.type 
+      when "Polygon" then @createSimplePath countryGeoJson.geometry.coordinates, path
+      when "MultiPolygon" then @createMultiPath countryGeoJson.geometry.coordinates, path
+
+  createSimplePath: (coordinates, path)->
+    component = new paper.Path
+    component = @createPath coordinates, component
+    path.addChild component
+
+    path
+
+  createPath: (coordinates, path)->  
+    coordinates = coordinates[0]
+
+    correctedCoord = @projectToCanvas coordinates[0]
     start = new paper.Point correctedCoord[0],correctedCoord[1]
     path.moveTo start
 
-    _.each countryCoords, (coord)=>
+    _.each coordinates, (coord)=>
       correctedCoord = @projectToCanvas coord
       path.lineTo correctedCoord
       path.moveTo coord
+
+    path
+
+  createMultiPath: (coordinates, path)->
+    components = []
+    _.each coordinates, (simplePolygon)=>
+      component = new paper.Path
+      component = @createPath simplePolygon, component
+      components.push component
+
+    path.addChildren components
 
     path
 
