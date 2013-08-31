@@ -13,7 +13,7 @@
 //= require underscore
 //= require jquery
 //= require jquery_ujs
-//= require jquery.ui.all
+//= require jquery.ui.autocomplete
 //= require turbolinks
 //= require paperjs/paper
 //= require_tree .
