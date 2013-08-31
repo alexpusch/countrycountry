@@ -15,6 +15,5 @@
 //= require jquery_ujs
 //= require jquery.ui.all
 //= require turbolinks
-//= require chosen-jquery
 //= require paperjs/paper
 //= require_tree .
