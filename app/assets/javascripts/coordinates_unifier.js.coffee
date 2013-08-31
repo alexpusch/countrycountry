@@ -1,6 +1,6 @@
 class window.CoordinatesUnifier
   unify: (geoJson)->  
-    @positivateAngels geoJson
+    # @positivateAngels geoJson
     @translateToOrigin geoJson   
     @projectCoords geoJson
 
