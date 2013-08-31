@@ -32,6 +32,8 @@ gem 'compass-rails', github: 'milgner/compass-rails', branch: 'rails4'
 gem 'gon'
 gem 'underscore-rails'
 
+gem 'google-analytics-rails'
+
 group :development do
   gem 'better_errors'
   gem 'binding_of_caller'

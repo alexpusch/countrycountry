@@ -7,6 +7,7 @@
     = javascript_include_tag "application", "data-turbolinks-track" => true
     = csrf_meta_tags
     = stylesheet_link_tag "font", href: 'http://fonts.googleapis.com/css?family=Holtwood+One+SC'
+    = analytics_init if Rails.env.production?
   %body
     .header
       .title
