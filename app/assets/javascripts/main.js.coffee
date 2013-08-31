@@ -12,7 +12,7 @@ $ ->
 
 
   loadCountry = (country, side) ->
-    $.get("assets/#{country}.geo.json").done (data)->
+    $.get("countries/#{country}.geo.json").done (data)->
       window.data = data
 
       geoJson = unifier.unify data
