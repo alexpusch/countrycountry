@@ -26,8 +26,6 @@ gem 'turbolinks'
 # Build JSON APIs with ease. Read more: https://github.com/rails/jbuilder
 gem 'jbuilder', '~> 1.2'
 
-gem 'chosen-rails'
-
 gem 'haml-rails'
 gem 'compass-rails', github: 'milgner/compass-rails', branch: 'rails4'
 
