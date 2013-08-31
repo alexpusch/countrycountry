@@ -1,28 +1,17 @@
-== README
+CountryCountry
+==
 
-This README would normally document whatever steps are necessary to get the
-application up and running.
+Which country is bigger?
 
-Things you may want to cover:
+I took countries SHAPE file from www.naturalearthdata.com, converted them to geo json using GDAL:
 
-* Ruby version
+ogr2ogr -f "GeoJSON" countries.json ne_50m_admin_0_countries.shp
 
-* System dependencies
+Extracted a single geo.json for each of the countries using a simple Ruby script (scripts/extract_countries.rb)
 
-* Configuration
+Made my best effort to project the coordinates in a way they would be completely distorted (Like in the common [Mercator projection](http://en.wikipedia.org/wiki/Mercator_projection)
 
-* Database creation
+Than I drawn the countries on a Canvas element using [Paper.js](http://paperjs.org)
 
-* Database initialization
-
-* How to run the test suite
-
-* Services (job queues, cache servers, search engines, etc.)
-
-* Deployment instructions
-
-* ...
-
-
-Please feel free to use a different markup language if you do not plan to run
-<tt>rake doc:app</tt>.
+TODO:
+Project the coordinates better, some countries are still distorted
