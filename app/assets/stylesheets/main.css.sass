@@ -1,12 +1,47 @@
 $country-width: 400px
 $country-height: 400px
 $country-margin: 20px
-$selector-width: 300px
+$selector-width: 350px
+
+$header-height: 200px
+$background-color: #C3FFA6
 
 body
-  background: #aef88e
+  background: $background-color
+  padding: 0
+  margin: 0
 
-.wrapper
+.header
+  position: relative
+  height: $header-height
+  background: green
+
+.title
+  position: absolute
+  bottom: 0
+  font-family: 'Holtwood One SC', serif
+  font-size: 50pt
+  padding-left: 20px
+
+.footer
+  margin-top: 200px
+  height: 100px
+  
+  .credits
+    width: 500px
+    margin: auto
+    
+    li
+      list-style: none
+      display: inline-block
+
+      a
+        text-decoration: none
+        color: gray
+        padding-left: 20px
+
+
+.app
   width: $country-width*2 + $country-margin*4 + 4
   margin: auto
   padding: 0px
@@ -19,35 +54,27 @@ body
       display: inline-block
       width: $country-width*2 + $country-margin*4
       height: $country-height
-      background: lightgreen
       margin: 20px
       margin: 0
 
   .country-selector
     display: inline-block
+
     input
       width: $selector-width
-      height: 50px
+      height: 65px
       border: 0
       padding-left: 10px
-      font-size: 20pt
+      font-size: 30pt
       box-sizing: border-box
       -moz-box-sizing: border-box
+      outline: 0
+      background: #006100
+      color: white
+      border-radius: 5px
 
     margin-left: ($country-width - $selector-width)/2 + $country-margin
     margin-right: ($country-width - $selector-width)/2 + $country-margin
-
-
-
-
-::-webkit-scrollbar 
-  width: 12px
- 
-::-webkit-scrollbar-track 
-
-::-webkit-scrollbar-thumb 
-  background: green
-  
 
 .ui-autocomplete
   width: $selector-width
@@ -57,11 +84,11 @@ body
   margin: 0
   box-sizing: border-box
   -moz-box-sizing: border-box
-  background: lightgreen
+  background: #006100
   overflow-y: scroll
   overflow-x: hidden
-  height: 400px
-
+  max-height: 300px
+  color: white
   .ui-menu-item
     a
       padding: 10px
@@ -71,3 +98,24 @@ body
 
   .ui-state-hover
     background: green
+
+.ui-autocomplete::-webkit-scrollbar 
+  width: 3px
+  background: green
+   
+.ui-autocomplete::-webkit-scrollbar-track 
+  width: 3px
+  background: green
+
+.ui-autocomplete::-webkit-scrollbar-thumb 
+  width: 2px
+  background: white
+
+::-webkit-input-placeholder  
+  color: #dddddd 
+
+::-moz-placeholder 
+  color: #dddddd
+
+::-ms-input-placeholder 
+  color: #dddddd
