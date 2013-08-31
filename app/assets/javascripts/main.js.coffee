@@ -19,10 +19,10 @@ $ ->
       countriesView.showCountry geoJson, side
 
   loadCountry "Israel", "left"
-  loadCountry "Germany", "right"
+  loadCountry "Uruguay", "right"
   # loadCountry "Germany", "right"
   $('.country-selector input[data-side=left]').val("Israel")
-  $('.country-selector input[data-side=right]').val("Germany")
+  $('.country-selector input[data-side=right]').val("Uruguay")
 
 
   $('.country-selector input').autocomplete
@@ -32,18 +32,34 @@ $ ->
       country = ui.item.value
       loadCountry country, side
 
+
+
+
 class CoordinatesUnifier
   unify: (geoJson)->  
-    @translateToOrigin geoJson
+    @positivateAngels geoJson
+    @translateToOrigin geoJson   
+    @projectCoords geoJson
+
     window.geoJson = geoJson
-    @projectToMercator geoJson
     geoJson
+
+  positivateAngels: (geoJson)->
+    @visitCoordinate geoJson.geometry.coordinates, (coord)=>
+      if coord.x < 0
+        coord.x += 360
+
+      if coord.y < 0
+        coord.y += 360
+
+      coord
 
   translateToOrigin: (geoJson)->
     delta = @findDeltaToOrigin geoJson
     @translateCoords geoJson.geometry.coordinates, delta
 
   findDeltaToOrigin: (geoJson)->
+
     coordinates = geoJson.geometry.coordinates
     coordinates = @flatten coordinates, []
 
@@ -59,8 +75,8 @@ class CoordinatesUnifier
       y: coord.y + delta[1]
 
 
-  projectCoords: (coordinates)->
-    @visitCoordinate coordinates, (coord)=>
+  projectCoords: (geoJson)->
+    @visitCoordinate geoJson.geometry.coordinates, (coord)=>
       @projectToMercator coord
 
   visitCoordinate: (coordinates, action) ->
