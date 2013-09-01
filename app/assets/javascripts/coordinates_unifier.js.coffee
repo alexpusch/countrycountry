@@ -1,6 +1,8 @@
 class window.CoordinatesUnifier
-  unify: (geoJson)->  
-    # @positivateAngels geoJson
+  unify: (geoJson)->
+    if ["Russia","United States"].indexOf(geoJson.properties.name) >= 0
+      @positivateAngels geoJson
+
     @translateToOrigin geoJson   
     @projectCoords geoJson
 
