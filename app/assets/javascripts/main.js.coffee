@@ -9,6 +9,8 @@ $ ->
     height: $("#countries canvas").height()
     margin: 20
 
+  left_country = countries[_.random 0, countries.length]
+  right_country = countries[_.random 0, countries.length]
 
   loadCountry = (country, side) ->
     $.get("countries/#{country}.geo.json").done (data)->
@@ -19,8 +21,8 @@ $ ->
       
       $(".country-selector input[data-side=#{side}]").val(country)
 
-  loadCountry "Japan", "left"
-  loadCountry "Egypt", "right"
+  loadCountry left_country, "left"
+  loadCountry right_country, "right"
 
   $('.country-selector input').autocomplete
     source: countries
