@@ -30,20 +30,38 @@ class window.CountriesView
       left: new paper.CompoundPath()
       right: new paper.CompoundPath()
 
+    @setUpLoader()
+
     _.extend @paths.left, @pathStyle
     _.extend @paths.right, @pathStyle
 
     window.paths = @paths
 
+  setUpLoader: ->
+    @loader = new paper.Path.Circle(new paper.Point(0,0), 50)
+    @loader.strokeColor = 'black'
+    @loader.visible = false
+
   showCountry: (countryPromise, side)->
-    console.log "start loading country"
+    @startLoading side
+    @clearSide side
+
     countryPromise.done (data)=>
-      console.log "end loading country"
+      @endLoading()
+
       unifier = new CoordinatesUnifier
       geoJson = unifier.unify data
       @coords[side] = geoJson
 
       @render()
+
+  startLoading: (side)->
+    @loader.position = @getSideCenter side
+    @loader.visible = true
+    
+
+  endLoading: (side)->
+    @loader.visible = false
 
   render: ->
     unless @coords.left? && @coords.right?
@@ -59,7 +77,6 @@ class window.CountriesView
 
   createPathFromGeoJson: (countryGeoJson, path)->
     path.removeChildren()
-
     switch countryGeoJson.geometry.type 
       when "Polygon" then @createSimplePath countryGeoJson.geometry.coordinates, path
       when "MultiPolygon" then @createMultiPath countryGeoJson.geometry.coordinates, path
@@ -100,8 +117,8 @@ class window.CountriesView
     path
 
   moveToPlace: (left, right)->
-    targetLeftCenter = new paper.Point(@margin + @countryWidth/2, @height/2)
-    targetRightCenter = new paper.Point(3 * @margin + @countryWidth * 1.5, @height/2)
+    targetLeftCenter = @getLeftCenter()
+    targetRightCenter = @getRightCenter()
 
     leftDelta = targetLeftCenter.subtract left.bounds.center
     rightDelta = targetRightCenter.subtract right.bounds.center
@@ -143,3 +160,22 @@ class window.CountriesView
 
   projectToCanvas: (coord)->
     [coord[0], @height - coord[1]]
+
+  clearSide: (side)->
+    @getPath(side).removeChildren()
+
+  getPath: (side)->
+    switch side
+      when "left" then @paths.left
+      when "right" then @paths.right   
+
+  getSideCenter: (side)->
+    switch side
+      when "left" then @getLeftCenter()
+      when "right" then @getRightCenter()
+
+  getLeftCenter: ->
+    new paper.Point(@margin + @countryWidth/2, @height/2)
+    
+  getRightCenter: ->
+    new paper.Point(3 * @margin + @countryWidth * 1.5, @height/2)
