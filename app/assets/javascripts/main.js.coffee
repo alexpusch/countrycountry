@@ -26,6 +26,7 @@ $ ->
 
   $('.country-selector input').autocomplete
     source: countries
+    minLength: 0
     select: (event, ui) ->
       side = $(event.target).data('side')
       country = ui.item.value
@@ -39,6 +40,18 @@ $ ->
       $(event.target).css('border-bottom-left-radius', "5px")
       $(event.target).css('border-bottom-right-radius', "5px")
 
+  $('.country-selector input').focus (event, ui)->
+    input = $(event.target)
+    input.data('old-val', input.val())
+    input.val ""
+    input.autocomplete('search', '')
+
+  $('.country-selector input').blur (event, ui)->
+    input = $(event.target)
+
+    if input.val() == '' && input.data('old-val')
+      input.val input.data('old-val')
+      
   $('.country-selector input').keypress (event)->
     if event.which == 13
       input = $(event.target)
