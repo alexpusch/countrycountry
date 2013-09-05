@@ -10,6 +10,6 @@ class CountiesProvider
       country_name = country_path.basename(".geo.json").to_s
       countries_list.push country_name
     end
-    countries_list
+    countries_list.sort
   end
 end
