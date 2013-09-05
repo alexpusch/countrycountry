@@ -38,8 +38,12 @@ class window.CountriesView
     window.paths = @paths
 
   setUpLoader: ->
-    @loader = new paper.Path.Circle(new paper.Point(0,0), 50)
-    @loader.strokeColor = 'black'
+    @loader = new paper.PointText(new paper.Point(0,0))
+    @loader.justification = 'center'
+    @loader.fillColor = 'green'
+    @loader.content = 'Loading...'
+    @loader.fontSize = 28
+   
     @loader.visible = false
 
   showCountry: (countryPromise, side)->
