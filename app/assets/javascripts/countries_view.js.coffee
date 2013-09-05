@@ -35,10 +35,15 @@ class window.CountriesView
 
     window.paths = @paths
 
-  showCountry: (geoJson, side)->
-    @coords[side] = geoJson
+  showCountry: (countryPromise, side)->
+    console.log "start loading country"
+    countryPromise.done (data)=>
+      console.log "end loading country"
+      unifier = new CoordinatesUnifier
+      geoJson = unifier.unify data
+      @coords[side] = geoJson
 
-    @render()
+      @render()
 
   render: ->
     unless @coords.left? && @coords.right?

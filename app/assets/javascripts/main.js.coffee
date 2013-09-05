@@ -13,13 +13,9 @@ $ ->
   right_country = countries[_.random 0, countries.length]
 
   loadCountry = (country, side) ->
-    $.get("countries/#{country}.geo.json").done (data)->
-      window.data = data
-
-      geoJson = unifier.unify data
-      countriesView.showCountry geoJson, side
-      
-      $(".country-selector input[data-side=#{side}]").val(country)
+    $(".country-selector input[data-side=#{side}]").val(country)
+    countryPromise = $.get("countries/#{country}.geo.json")
+    countriesView.showCountry countryPromise, side 
 
   loadCountry left_country, "left"
   loadCountry right_country, "right"
@@ -51,7 +47,7 @@ $ ->
 
     if input.val() == '' && input.data('old-val')
       input.val input.data('old-val')
-      
+
   $('.country-selector input').keypress (event)->
     if event.which == 13
       input = $(event.target)
